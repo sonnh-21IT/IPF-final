@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "706147875128",
+    "project_id": "ipf-app-son",
+    "storage_bucket": "ipf-app-son.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706147875128:android:4053cbdda37dcea30ea9cd",
+        "android_client_info": {
+          "package_name": "com.example.config"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVb-RbwMmlRr5H8MBwvVbYCWODDQdTMN8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
