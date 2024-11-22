@@ -25,23 +25,16 @@ class SearchingDialog extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.location_history),
-                      label: const Text('Đang đánh dấu vị trí'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 22, bottom: 22),
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0),
+                      width: double.infinity,
+                      child: Center(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Vị trí của bạn đang được đánh dấu và mọi người có thể xác định được vị trí của bạn',
+                            style: TextStyle(color: Colors.green, fontSize: 18),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
+                      )),
                   const SizedBox(
                     height: 16,
                   ),
