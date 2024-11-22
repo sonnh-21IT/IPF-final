@@ -26,8 +26,6 @@ class ConnectedDialog extends StatelessWidget {
               'Phiên dịch viên sẽ tới trong 10 phút',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            // const SizedBox(height: 8),
-            // const Text('Tới nơi của Trần Quang'),
             const SizedBox(height: 16),
             const LinearProgressIndicator(
               value: 1,
@@ -86,12 +84,12 @@ class ConnectedDialog extends StatelessWidget {
                   child: IconButton(
                     icon: const Icon(Icons.phone_forwarded_rounded),
                     color: Colors.black, // Đặt màu của biểu tượng nếu cần
-                    onPressed: (){},
+                    onPressed: () {},
                   ),
                 ),
                 const SizedBox(width: 4), // Thêm khoảng cách
                 ElevatedButton(
-                  onPressed: (){
+                  onPressed: () {
                     onFinishJob();
                   },
                   style: ElevatedButton.styleFrom(

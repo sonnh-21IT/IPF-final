@@ -1,16 +1,41 @@
 import 'package:config/models/book_item.dart';
+import 'package:config/models/field.dart';
+import 'package:config/models/language.dart';
+import 'package:config/services/field_service.dart';
+import 'package:config/services/language_service.dart';
 import 'package:flutter/material.dart';
 
-class ProjectDialog extends StatelessWidget {
+class ProjectDialog extends StatefulWidget {
   final BookItem bookItem;
   final Function onCancel;
   final Function onConfirm;
+  final Language lang;
+  final Field field;
 
   const ProjectDialog(
       {super.key,
       required this.bookItem,
       required this.onConfirm,
-      required this.onCancel});
+      required this.onCancel,
+      required this.lang,
+      required this.field});
+
+  @override
+  State<ProjectDialog> createState() => _ProjectDialogState();
+}
+
+class _ProjectDialogState extends State<ProjectDialog> {
+  late BookItem _bookItem;
+  late Language _language;
+  late Field _field;
+
+  @override
+  void initState() {
+    super.initState();
+    _bookItem = widget.bookItem;
+    _language = widget.lang;
+    _field = widget.field;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,28 +58,13 @@ class ProjectDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildDropdown(
-                title: 'Ngôn ngữ:',
-                value: bookItem.language,
-                items: ['Hàn Quốc', 'Anh', 'Pháp'],
-                onChanged: (newValue) {},
-              ),
+              Text("Thanh toán: ${_language.language}"),
               const SizedBox(height: 10),
-              _buildDropdown(
-                title: 'Thanh toán:',
-                value: bookItem.isPrepay ? 'Trước' : 'Sau',
-                items: ['Trước', 'Sau'],
-                onChanged: (newValue) {},
-              ),
+              Text("Thanh toán: ${_bookItem.isPrepay ? 'Trước' : 'Sau'}"),
               const SizedBox(height: 10),
-              _buildDropdown(
-                title: 'Lý do:',
-                value: bookItem.field,
-                items: ['Y tế', 'Pháp Lý'],
-                onChanged: (newValue) {},
-              ),
+              Text("Lý do: ${_field.field}"),
               const SizedBox(height: 10),
-              Text("Ngân sách(VND): ${bookItem.salary}"),
+              Text("Ngân sách(VND): ${_bookItem.salary}"),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -70,7 +80,7 @@ class ProjectDialog extends StatelessWidget {
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          onCancel(bookItem);
+                          widget.onCancel(_bookItem);
                         },
                         child: const Text('Hủy'),
                       ),
@@ -84,7 +94,7 @@ class ProjectDialog extends StatelessWidget {
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          onConfirm(bookItem);
+                          widget.onConfirm(_bookItem);
                         },
                         child: const Text('Chấp nhận'),
                       ),
@@ -96,68 +106,6 @@ class ProjectDialog extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String title,
-    required String value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title),
-        Container(
-          width: double.infinity,
-          child: InputDecorator(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.transparent),
-              ),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: value,
-                items: items.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: onChanged,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField({
-    required String title,
-    required String hintText,
-    required TextEditingController controller,
-    required ValueChanged<String> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title),
-        TextField(
-          decoration: InputDecoration(
-            hintText: hintText,
-            border: const OutlineInputBorder(),
-          ),
-          onChanged: onChanged,
-          controller: controller,
-        ),
-      ],
     );
   }
 }

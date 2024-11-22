@@ -72,8 +72,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             biography: '',
             status: false,
             roleId: roles!.roleId,
-            field: '',
-            language: '',
+            fieldId: '',
+            languageId: '',
             imagePath: '',
             birthday: '');
         await users.add(user.toMap());

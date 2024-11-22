@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:config/models/book_item.dart';
+import 'package:config/models/field.dart';
+import 'package:config/models/language.dart';
 import 'package:config/models/position.dart';
 import 'package:config/services/account_service.dart';
 import 'package:config/services/book_service.dart';
+import 'package:config/services/field_service.dart';
+import 'package:config/services/language_service.dart';
 import 'package:config/services/position_service.dart';
 import 'package:config/services/role_service.dart';
-import 'package:config/widgets/stateless/confirm_position_dialog.dart';
+import 'package:config/utils/handle_item_change.dart';
 import 'package:config/widgets/stateless/connected_dialog.dart';
 import 'package:config/widgets/stateless/form_dialog.dart';
 import 'package:config/widgets/stateless/project_dialog.dart';
@@ -44,7 +48,10 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   StreamSubscription<QuerySnapshot>? _bookSubscription;
   final Set<Marker> _markers = {};
   Users? _translator;
+  Users? _userConnect;
   List<LatLng> _routePoints = [];
+  List<Users> _activeUsers = [];
+  List<Users> _breakUsers = [];
 
   @override
   void initState() {
@@ -53,88 +60,87 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     _initialize();
   }
 
-  Future<void> _subscribeToConnectionChanges(
-      String idCustomer, String idTranslator) async {
+  void _subscribeItemChanges(String idCustomer, String idTranslator) {
     _bookSubscription = BookService.getConnect(idCustomer, idTranslator)
         .listen((snapshot) async {
       if (snapshot.docs.isNotEmpty) {
         Users user = await AccountService.fetchUserByAccountId(uId);
-        var doc = snapshot.docs.first;
-        var data = doc.data() as Map<String, dynamic>?;
-
-        if (data != null) {
-          if (data['idCustomer'] == user.userId) {
-            if (data['status'] == -1) {
-              Navigator.of(context).pop();
-              setState(() {
-                _isSearching = false;
-              });
+        var changes = snapshot.docChanges
+            .where((change) => change.type == DocumentChangeType.modified)
+            .toList();
+        if (changes.isNotEmpty) {
+          var doc = changes.first.doc;
+          var data = doc.data() as Map<String, dynamic>?;
+          if (data != null) {
+            if (data['idCustomer'] == user.userId) {
+              if (data['status'] == -1) {
+                Navigator.of(context).pop();
+                HandleItemChange.showDialogOnChange(
+                    "Phiên dịch viên đã từ chối kết nối",
+                    Color(0xFF4CAF50),
+                    context);
+                setState(() {
+                  _isSearching = false;
+                });
+              }
             }
-          }
-          if (data['idTranslator'] == user.userId) {
-            if (data['status'] == 0) {
-              setState(() {
-                _isSearching = false;
-              });
-              BookItem bookItem = BookItem(
-                itemId: doc.id,
-                field: data['field'] ?? '',
-                language: data['language'] ?? '',
-                salary: data['salary']?.toDouble() ?? 0.0,
-                status: data['status'] ?? 0,
-                isPrepay: data['isPrepay'] ?? false,
-                idCustomer: data['idCustomer'] ?? '',
-                idTranslator: data['idTranslator'] ?? '',
-              );
-
-              // Hiển thị dialog với thông tin của bookItem
-              showDialog(
-                context: context,
-                builder: (context) => ProjectDialog(
-                  bookItem: bookItem,
-                  onConfirm: (item) {
-                    onConfirm(item);
-                  },
-                  onCancel: (item) {
-                    updateBookItem(item, -1);
-                  },
-                ),
-              );
-            }
-            if (data['status'] == 2) {
-              finish();
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    content: IntrinsicHeight(
-                      child: Container(
-                        width: 300,
-                        color: const Color(0x0081c784),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: RichText(
-                                text: const TextSpan(
-                                  text: "Dự án đã hoàn thành",
-                                  style: TextStyle(
-                                    color: Color(0xFF4CAF4F),
-                                  ),
-                                ),
-                                softWrap: true,
-                                overflow: TextOverflow.clip,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
+            if (data['idTranslator'] == user.userId) {
+              if (data['status'] == 2) {
+                HandleItemChange.showDialogOnChange(
+                    "Dự án đã hoàn thành", Color(0xFF4CAF50), context);
+                setState(() {
+                  _isSearching = false;
+                });
+              }
             }
           }
         }
+      }
+    });
+  }
+
+  void _monitorBookingItems(String idTranslator) {
+    BookService.trackBookings().listen((QuerySnapshot bookingSnapshot) {
+      for (var bookingDoc in bookingSnapshot.docs) {
+        bookingDoc.reference
+            .collection("item")
+            .snapshots()
+            .listen((QuerySnapshot itemSnapshot) async {
+          for (var itemDoc in itemSnapshot.docChanges) {
+            if (itemDoc.type == DocumentChangeType.added) {
+              var data = itemDoc.doc.data() as Map<String, dynamic>;
+              if (data['idTranslator'] == idTranslator) {
+                BookItem item = BookItem(
+                  itemId: itemDoc.doc.id,
+                  fieldId: data['fieldId'],
+                  languageId: data['languageId'],
+                  salary: data['salary'],
+                  status: data['status'],
+                  isPrepay: data['isPrepay'],
+                  idTranslator: data['idTranslator'],
+                  idCustomer: data['idCustomer'],
+                  timestamp: data['timestamp'],
+                );
+                Language? lang =
+                    await LanguageService.readLanguage(item.languageId);
+                Field? field = await FieldService.readField(item.fieldId);
+                _subscribeItemChanges(item.idCustomer!, item.idTranslator!);
+                if (data['status'] == 0) {
+                  showDialog(
+                      context: context,
+                      builder: (context) => ProjectDialog(
+                          bookItem: item,
+                          onConfirm: onConfirm,
+                          lang: lang!,
+                          field: field!,
+                          onCancel: (item) async {
+                            await updateBookItem(item, -1);
+                          }));
+                }
+              }
+            }
+          }
+        });
       }
     });
   }
@@ -307,60 +313,60 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
       builder: (BuildContext context) {
         return VerificationDialog(
           onTranslatorSelected: () {
+            setState(() {
+              _isInterpreterSearch = true;
+              _isSearching = true;
+            });
+            updateStatus(true);
+            onTranslatorSearch();
+          },
+          onCustomerSelected: () {
+            setState(() {
+              _isInterpreterSearch = false;
+            });
             showDialog(
                 context: context,
-                builder: (context) => ConfirmPositionDialog(
-                      onConfirm: () async {
+                builder: (context) => FormDialog(
+                      onDone: (item) {
+                        Navigator.of(context).pop();
                         setState(() {
-                          _isInterpreterSearch = true;
+                          _isInterpreterSearch = false;
                           _isSearching = true;
                         });
                         updateStatus(true);
+                        onCustomerSearch(item);
                       },
                     ));
-          },
-          onCustomerSelected: () {
-            showDialog(
-                context: context,
-                builder: (context) => ConfirmPositionDialog(onConfirm: () {
-                      setState(() {
-                        _isInterpreterSearch = false;
-                      });
-                      showDialog(
-                          context: context,
-                          builder: (context) => FormDialog(
-                                onDone: (item) {
-                                  Navigator.of(context).pop();
-                                  setState(() {
-                                    _isInterpreterSearch = false;
-                                    _isSearching = true;
-                                  });
-                                  updateStatus(true);
-                                  onCustomerClick(item);
-                                },
-                              ));
-                    }));
           },
         );
       },
     );
   }
 
-  Future<void> onCustomerClick(BookItem item) async {
+  Future<void> onCustomerSearch(BookItem item) async {
     Role? role = await RoleService.getRoleByValue("Phiên dịch viên");
     print('role: ${role!.roleId}');
     List<Users> users =
         await AccountService.fetchActiveUsers(true, role.roleId);
     Users currentUser = await AccountService.fetchUserByAccountId(uId);
+    setState(() {
+      _activeUsers = users;
+      _breakUsers.add(currentUser);
+    });
     List<Users> filteredUsers =
-        users.where((user) => user.userId != currentUser.userId).toList();
-
-    print('interpreter: ${filteredUsers[0].userId}');
-    if (users.isNotEmpty) {
-      showMyDialog(filteredUsers[0], currentUser.userId!, item);
+        _activeUsers.where((user) => !_breakUsers.contains(user)).toList();
+    _userConnect = filteredUsers[0];
+    print('interpreter: ${_userConnect!.userId}');
+    if (_activeUsers.isNotEmpty) {
+      showMyDialog(_userConnect!, currentUser.userId!, item);
     } else {
       print('No interpreters available');
     }
+  }
+
+  Future<void> onTranslatorSearch() async {
+    Users user = await AccountService.fetchUserByAccountId(uId);
+    _monitorBookingItems(user.userId!);
   }
 
   void showMyDialog(Users translator, String customerId, BookItem item) {
@@ -379,14 +385,23 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
                   onFinish();
                 });
               },
+              onBreak: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _breakUsers.add(_userConnect!);
+                  });
+                  onCustomerSearch(item);
+                });
+              },
             ));
   }
 
-  Future<void> startConnection(String customerId, String translatorId, BookItem item) async {
+  Future<void> startConnection(
+      String customerId, String translatorId, BookItem item) async {
     await BookService.connect(customerId, translatorId, item);
-    await _subscribeToConnectionChanges(customerId, translatorId);
+    _subscribeItemChanges(customerId, translatorId);
   }
-
 
   Future<void> updateStatus(bool isActive) async {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -435,24 +450,24 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   }
 
   Future<void> _getDirections(Position position) async {
-    if (_currentLocation == null) return;
-    final response = await http
-        .get(Uri.parse('http://router.project-osrm.org/route/v1/driving/'
-            '${_currentLocation!.longitude},${_currentLocation!.latitude};'
-            '${position.longitude},${position.latitude}'
-            '?overview=full&geometries=geojson&steps=true'));
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      print(response.body);
-      final List<dynamic> coordinates =
-          json['routes'][0]['geometry']['coordinates'];
-      _routePoints = coordinates
-          .map((coordinate) => LatLng(coordinate[1], coordinate[0]))
-          .toList();
-    } else {
-      throw Exception('Failed to load directions');
-    }
+    // if (_currentLocation == null) return;
+    // final response = await http
+    //     .get(Uri.parse('http://router.project-osrm.org/route/v1/driving/'
+    //         '${_currentLocation!.longitude},${_currentLocation!.latitude};'
+    //         '${position.longitude},${position.latitude}'
+    //         '?overview=full&geometries=geojson&steps=true'));
+    //
+    // if (response.statusCode == 200) {
+    //   final json = jsonDecode(response.body);
+    //   print(response.body);
+    //   final List<dynamic> coordinates =
+    //       json['routes'][0]['geometry']['coordinates'];
+    //   _routePoints = coordinates
+    //       .map((coordinate) => LatLng((coordinate[1]).toDouble(), (coordinate[0]).toDouble()))
+    //       .toList();
+    // } else {
+    //   throw Exception('Failed to load directions');
+    // }
   }
 
   Future<void> getTranslator(String translatorId) async {
@@ -465,14 +480,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     print(user.userId);
     BookItem? item =
         await BookService.fetchLatestBookingByUserIdWithStatus(user.userId!, 1);
-    updateBookItem(item!, 2);
-    setState(() {
-      _isSearching = false;
-      _isInterpreterSearch = false;
-    });
-  }
-
-  void finish() {
+    await updateBookItem(item!, 2);
     setState(() {
       _isSearching = false;
       _routePoints = [];
