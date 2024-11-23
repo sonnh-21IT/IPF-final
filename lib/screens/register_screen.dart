@@ -75,7 +75,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             fieldId: '',
             languageId: '',
             imagePath: '',
-            birthday: '');
+            birthday: '',
+            credit: 50);
         await users.add(user.toMap());
 
         print('Đăng kí và add thông tin người dùng thành công');

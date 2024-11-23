@@ -1,8 +1,13 @@
 import 'package:config/base/base_screen.dart';
 import 'package:config/utils/components/app_toolbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../models/user.dart';
+import '../services/account_service.dart';
+import '../services/auth_service.dart';
+import '../services/data_service.dart';
 import '../utils/components/component.dart';
 
 class InterProfileScreen extends StatelessWidget {
@@ -41,6 +46,8 @@ class ContentApp extends StatefulWidget {
 
 class _StateContent extends State<ContentApp> {
   // Final Variable
+  Users? userInfo;
+  DataService profileService = DataService('user');
   late String _idInterpreter;
   final String _fullname = "Từ Công Minh";
   final String _role = "Phiên dịch viên";
@@ -55,10 +62,22 @@ class _StateContent extends State<ContentApp> {
   final String _phoneNumber = "0931368443";
   String colorrr = "0xFF4CAF4F";
 
+
+  Future<void> getDataUser() async {
+    bool isLogin = await AuthService.checkLogin();
+    if (isLogin) {
+      Users user = await AccountService.fetchUserByAccountId(FirebaseAuth.instance.currentUser!.uid);
+      setState(() {
+        userInfo = user;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _idInterpreter = widget.idInterpreter;
+    getDataUser();
   }
 
   @override
@@ -370,6 +389,23 @@ class _StateContent extends State<ContentApp> {
                                             child: ElevatedButton(
                                               onPressed: () {
                                                 // Xử lý sự kiện khi nhấn nút
+                                                Users user = Users(
+                                                  accountId: userInfo!.accountId,
+                                                  fullName: userInfo!.fullName,
+                                                  email: userInfo!.email,
+                                                  address: userInfo!.address,
+                                                  phone: userInfo!.phone,
+                                                  biography: userInfo!.biography,
+                                                  status: userInfo!.status,
+                                                  roleId: userInfo!.roleId,
+                                                  birthday: userInfo!.birthday,
+                                                  imagePath: "image.png",
+                                                  fieldId: userInfo!.fieldId,
+                                                  languageId: userInfo!.languageId,
+                                                  credit: userInfo!.credit - 5,
+                                                );
+                                                profileService.updateData(userInfo!.userId ?? userInfo!.accountId, user.toMap());
+
                                                 Navigator.of(context).pop();
                                                 showDialog(
                                                   context: context,

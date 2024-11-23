@@ -52,7 +52,8 @@ class ProjectService {
         birthday: doc['birthday'],
         fieldId: doc['field'],
         languageId: doc.data().containsKey('language') ? doc['language'] : '',
-        imagePath: doc.data().containsKey('imagePath') ? doc['imagePath'] : '');
+        imagePath: doc.data().containsKey('imagePath') ? doc['imagePath'] : '',
+        credit: doc['credit']);
 
     return user;
   }
@@ -104,7 +105,8 @@ class ProjectService {
           birthday: doc['birthday'],
           languageId: doc['language'],
           imagePath: doc['imagePath'],
-          fieldId: doc['field']);
+          fieldId: doc['field'],
+          credit: doc['credit']);
       users.add(user);
     }
     return users;

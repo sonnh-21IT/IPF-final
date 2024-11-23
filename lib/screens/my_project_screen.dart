@@ -3,7 +3,11 @@ import 'package:config/utils/components/app_toolbar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/user.dart';
+import '../services/data_service.dart';
+import '../services/account_service.dart';
+import '../services/auth_service.dart';
 import '../utils/components/component.dart';
 
 class MyProjectScreen extends StatelessWidget {
@@ -42,6 +46,8 @@ class ContentApp extends StatefulWidget {
 
 class _StateContent extends State<ContentApp> {
   // Final Variable
+  Users? userInfo;
+  DataService profileService = DataService('user');
   late String _idProject;
   final String _nameProject = "Pháp lý nhà đất ";
   final String _language = "Tiếng Hàn";
@@ -86,6 +92,16 @@ class _StateContent extends State<ContentApp> {
     }
   }
 
+  Future<void> getDataUser() async {
+    bool isLogin = await AuthService.checkLogin();
+    if (isLogin) {
+      Users user = await AccountService.fetchUserByAccountId(FirebaseAuth.instance.currentUser!.uid);
+      setState(() {
+        userInfo = user;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +110,7 @@ class _StateContent extends State<ContentApp> {
     _deadline = DateFormat("dd/MM/yyyy").parse(_setDeadline);
     Duration difference = _deadline.difference(_datePost);
     _daysRemaining = difference.inDays;
+    getDataUser();
   }
 
   @override
@@ -410,6 +427,22 @@ class _StateContent extends State<ContentApp> {
                                             child: ElevatedButton(
                                               onPressed: () {
                                                 // Xử lý sự kiện khi nhấn nút
+                                                Users user = Users(
+                                                  accountId: userInfo!.accountId,
+                                                  fullName: userInfo!.fullName,
+                                                  email: userInfo!.email,
+                                                  address: userInfo!.address,
+                                                  phone: userInfo!.phone,
+                                                  biography: userInfo!.biography,
+                                                  status: userInfo!.status,
+                                                  roleId: userInfo!.roleId,
+                                                  birthday: userInfo!.birthday,
+                                                  imagePath: "image.png",
+                                                  fieldId: userInfo!.fieldId,
+                                                  languageId: userInfo!.languageId,
+                                                  credit: userInfo!.credit - 5,
+                                                );
+                                                profileService.updateData(userInfo!.userId ?? userInfo!.accountId, user.toMap());
                                                 Navigator.of(context).pop();
                                                 showDialog(
                                                   context: context,
@@ -735,6 +768,7 @@ class _StateContent extends State<ContentApp> {
                                                     });
                                                   },
                                                 );
+
                                               },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.green,

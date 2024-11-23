@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AccountService {
+class DataService {
   String collection;
 
   late CollectionReference connectData;
-  AccountService(this.collection){
+  DataService(this.collection){
     connectData = FirebaseFirestore.instance.collection(collection);
   }
 

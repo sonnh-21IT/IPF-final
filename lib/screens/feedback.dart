@@ -49,7 +49,7 @@ class ContentApp extends StatefulWidget {
 class _StateContent extends State<ContentApp> {
   int _selectedRating = 0;
   final TextEditingController _feedbackSpace = TextEditingController();
-  AccountService feedbackService = AccountService('feedback');
+  DataService feedbackService = DataService('feedback');
 
   void _submitFeedback() {
     if (areFieldsEmpty()) {
