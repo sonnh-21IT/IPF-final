@@ -22,7 +22,8 @@ class ProjectService {
           salaryType: doc['salaryType'],
           minSalary: doc['minSalary'],
           maxSalary: doc['maxSalary'],
-          isChecked: doc['isChecked']);
+          isChecked: doc['isChecked'],
+          status: doc['status']);
       projects.add(project);
     }
     projects.forEach((element) {

@@ -52,7 +52,7 @@ class _StateContent extends State<ContentApp> {
   String _salaryType = '';
   bool _isChecked = false;
   String _message = '';
-  String _idDocument =  '';
+  String _idDocument = '';
   Map<String, List<String>> languageCertificates = {
     'Tiếng Anh': ['IELTS', 'TOEFL', 'Cambridge'],
     'Tiếng Pháp': ['DELF', 'DALF', 'TCF'],
@@ -447,7 +447,6 @@ class _StateContent extends State<ContentApp> {
             width: double.infinity, // Chiếm hết chiều ngang
             child: ElevatedButton(
               onPressed: () {
-
                 if (areFieldsEmpty()) {
                   _message =
                       "Bạn đã nhập thiếu dữ liệu, vui lòng kiểm tra lại và cập nhật đầy đủ thông tin dự án trước khi đăng tải";
@@ -469,6 +468,7 @@ class _StateContent extends State<ContentApp> {
                       minSalary: num.parse(_minSalary.text),
                       maxSalary: num.parse(_maxSalary.text),
                       isChecked: _isChecked,
+                      status: 0,
                     );
 
                     projectService.addData(project.toMap());
@@ -519,7 +519,8 @@ class _StateContent extends State<ContentApp> {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (BuildContext context) => ListProjectScreen()));
+                                          builder: (BuildContext context) =>
+                                              ListProjectScreen()));
                                 },
                                 child: const CustomText(
                                   data: "OK",

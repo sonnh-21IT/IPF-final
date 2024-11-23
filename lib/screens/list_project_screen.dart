@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:config/base/base_screen.dart';
-import 'package:config/models/project.dart';
-import 'package:config/services/project_service.dart';
 import 'package:config/utils/components/app_toolbar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -77,123 +75,123 @@ class _StateContentApp extends State<ContentApp> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // padding: const EdgeInsets.only(top: 10 ,left: 20, right: 20, bottom: 20),
-      color: Colors.white,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ==== Search ====
+        // padding: const EdgeInsets.only(top: 10 ,left: 20, right: 20, bottom: 20),
+        color: Colors.white,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ==== Search ====
               Container(
-              margin: const EdgeInsets.only(left: 20, right: 20, top: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white, // Color
-                  borderRadius: BorderRadius.circular(50), // Border Radius
-                  border: Border.all(
-                    color: const Color(0xFF4CAF4F),
-                    width: 1,
-                  ), // Boder
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2), // Màu của bóng đổ
-                      spreadRadius: 5, // Bán kính lan của bóng đổ
-                      blurRadius: 7, // Bán kính mờ của bóng đổ
-                      offset: const Offset(0, 3),
-                    )
-                  ], // Vị trí bóng đổ (x, y)
-                  ),
-                  child: Row(
-                    children: [
-                      //==== Input Search ====
-                      Expanded(
-                        child: SizedBox(
+                  margin: const EdgeInsets.only(left: 20, right: 20, top: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Color
+                      borderRadius: BorderRadius.circular(50), // Border Radius
+                      border: Border.all(
+                        color: const Color(0xFF4CAF4F),
+                        width: 1,
+                      ), // Boder
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Colors.black.withOpacity(0.2), // Màu của bóng đổ
+                          spreadRadius: 5, // Bán kính lan của bóng đổ
+                          blurRadius: 7, // Bán kính mờ của bóng đổ
+                          offset: const Offset(0, 3),
+                        )
+                      ], // Vị trí bóng đổ (x, y)
+                    ),
+                    child: Row(
+                      children: [
+                        //==== Input Search ====
+                        Expanded(
+                          child: SizedBox(
+                            height: 50,
+                            child: TextField(
+                              controller: _valueSearch,
+                              style: const TextStyle(
+                                fontSize: 16,
+                              ),
+                              decoration: const InputDecoration(
+                                  hintText: "Nhập thông tin tìm kiếm",
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF939393),
+                                  ),
+                                  prefixIcon: Icon(Icons.search),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      // Bo góc trên bên trái
+                                      bottomLeft: Radius.circular(
+                                          50), // Bo góc dưới bên trái
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFF4CAF4F),
+                                      width: 2.0,
+                                    ),
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      // Bo góc trên bên trái
+                                      bottomLeft: Radius.circular(
+                                          50), // Bo góc dưới bên trái
+                                    ),
+                                  )),
+                              onChanged: (val) {
+                                setState(() {
+                                  _valueSearch.text = val;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        // ==== Button ====
+                        SizedBox(
                           height: 50,
-                          child: TextField(
-                            controller: _valueSearch,
-                            style: const TextStyle(
-                              fontSize: 16,
-                            ),
-                            decoration: const InputDecoration(
-                                hintText: "Nhập thông tin tìm kiếm",
-                                hintStyle: TextStyle(
-                                  color: Color(0xFF939393),
-                                ),
-                                prefixIcon: Icon(Icons.search),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    // Bo góc trên bên trái
-                                    bottomLeft: Radius.circular(
-                                        50), // Bo góc dưới bên trái
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF4CAF4F),
-                                    width: 2.0,
-                                  ),
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    // Bo góc trên bên trái
-                                    bottomLeft: Radius.circular(
-                                        50), // Bo góc dưới bên trái
-                                  ),
-                                )),
-                            onChanged: (val) {
-                              setState(() {
-                                _valueSearch.text = val;
-                              });
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Xử lý sự kiện khi nhấn nút
+                              print("Value_Seach: ${_valueSearch.text}");
+                              print("Select Filter: $selectValue");
                             },
-                          ),
-                        ),
-                      ),
-                      // ==== Button ====
-                      SizedBox(
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Xử lý sự kiện khi nhấn nút
-                            print("Value_Seach: ${_valueSearch.text}");
-                            print("Select Filter: $selectValue");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF4F),
-                            // Đổi màu nền
-                            padding: const EdgeInsets.only(
-                                top: 12, bottom: 12, left: 10, right: 10),
-                            // Thêm padding
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(50),
-                                // Bo góc trên bên trái
-                                bottomRight:
-                                    Radius.circular(50), // Bo góc dưới bên trái
-                              ), // Giảm độ bo góc
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4CAF4F),
+                              // Đổi màu nền
+                              padding: const EdgeInsets.only(
+                                  top: 12, bottom: 12, left: 10, right: 10),
+                              // Thêm padding
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(50),
+                                  // Bo góc trên bên trái
+                                  bottomRight: Radius.circular(
+                                      50), // Bo góc dưới bên trái
+                                ), // Giảm độ bo góc
+                              ),
+                            ),
+                            child: const Row(
+                              children: [
+                                CustomText(
+                                    data: "Tìm kiếm",
+                                    fontSize: 16,
+                                    color: Colors.white),
+                                SizedBox(
+                                  width: 4,
+                                ),
+                                Icon(
+                                  FontAwesomeIcons.searchengin,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ],
                             ),
                           ),
-                          child: const Row(
-                            children: [
-                              CustomText(
-                                  data: "Tìm kiếm",
-                                  fontSize: 16,
-                                  color: Colors.white),
-                              SizedBox(
-                                width: 4,
-                              ),
-                              Icon(
-                                FontAwesomeIcons.searchengin,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ],
-                          ),
                         ),
-                      ),
-                    ],
-                  ),
-              )
-            ),
+                      ],
+                    ),
+                  )),
               const SizedBox(height: 20),
               // ==== List Project ====
               Container(
@@ -226,6 +224,7 @@ class _StateContentApp extends State<ContentApp> {
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('project')
+                          .where('status', isEqualTo: 1)
                           .snapshots(),
                       builder: (context, snapshots) {
                         if (snapshots.connectionState ==
@@ -233,7 +232,8 @@ class _StateContentApp extends State<ContentApp> {
                           print("========== Waiting ========");
                           return CircularProgressIndicator();
                         } else if (snapshots.hasError) {
-                          print("========== Error: ${snapshots.error} ========");
+                          print(
+                              "========== Error: ${snapshots.error} ========");
                           return Text('Có lỗi xảy ra');
                         } else if (snapshots.hasData) {
                           print(
@@ -279,14 +279,14 @@ class _StateContentApp extends State<ContentApp> {
                         }
                       },
                     ),
-        
+
                     // ==== Button Show Continue ====
                   ],
                 ),
               ),
             ],
           ),
-      ));
+        ));
   }
 }
 

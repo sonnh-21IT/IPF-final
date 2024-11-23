@@ -1,13 +1,10 @@
 
-import 'dart:convert';
 
 import 'package:config/utils/components/component.dart';
 import 'package:config/utils/themes/app_colors.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:http/http.dart' as http;
 import '../base/base_screen.dart';
 import '../models/message.dart';
 import '../utils/components/app_toolbar.dart';

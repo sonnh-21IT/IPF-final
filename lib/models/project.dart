@@ -12,6 +12,7 @@ class Project {
   num minSalary;
   num maxSalary;
   bool isChecked;
+  int status; 
 
   Project({
     this.idProject,
@@ -27,6 +28,7 @@ class Project {
     required this.minSalary,
     required this.maxSalary,
     required this.isChecked,
+    required this.status,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,6 +45,7 @@ class Project {
       'minSalary': minSalary,
       'maxSalary': maxSalary,
       'isChecked': isChecked,
+       'status': status, 
     };
   }
 }
