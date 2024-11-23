@@ -65,6 +65,17 @@ class _StateContent extends State<ContentApp> {
   final num _vote = 4.7;
   bool _isLogin = false;
 
+  Map<String, String> idLanguage = {
+    'iDRUHqE9moXNigg6ukJX' :  'Tiếng Anh',
+    'mtEeK49x1ok5ZlXEq3A5' : 'Tiếng Pháp',
+    'zY4HaJX4MCHhNSoH8dSx': 'Tiếng Nhật',
+    'ndXC1WAmvQBXjsSLaQJb': 'Tiếng Hàn',
+    'Z9PEd5g4FadOfvIE7JCy': 'Tiếng Ý',
+    'MJCU4RFTj6DVDCHye89E' : 'Tiếng Bồ Đào Nha' ,
+    'Bv3UU2NmhSVY8AOUeCZd' : 'Tiếng Nga',
+    'N3hZEeDPYSSaJMXsZqBE' : 'Tiếng Thái',
+  };
+
   // Final Function
   void loadImage() async {
     SharedPreferences loadImg = await SharedPreferences.getInstance();
@@ -276,7 +287,7 @@ class _StateContent extends State<ContentApp> {
                           width: 14,
                         ),
                         CustomText(
-                          data: userInfo.languageId ?? '',
+                          data: idLanguage[userInfo.languageId] ?? '',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

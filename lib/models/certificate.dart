@@ -4,6 +4,7 @@ class Certificate {
   final String idLanguage;
   final String idUser;
   final int status;
+  final String level;
 
   Certificate( {
     this.certificateId,
@@ -11,15 +12,16 @@ class Certificate {
     required this.idLanguage,
     required this.idUser,
     required this.status,
+    required this.level,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'certificateId': certificateId,
       'imgCheck': imgCheck,
       'idLanguage': idLanguage,
       'idUser': idUser,
       'status': status,
+      'level': level,
     };
   }
 }

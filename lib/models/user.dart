@@ -45,4 +45,9 @@ class Users {
       'field': fieldId,
     };
   }
+
+  @override
+  String toString() {
+    return 'Users{userId: $userId, accountId: $accountId, fullName: $fullName, email: $email, address: $address, phone: $phone, biography: $biography, status: $status, roleId: $roleId, birthday: $birthday, languageId: $languageId, imagePath: $imagePath, fieldId: $fieldId}';
+  }
 }

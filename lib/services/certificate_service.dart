@@ -15,17 +15,18 @@ class CertificateService {
     }
   }
 
-  static Future<Certificate?> readCertificate(String id) async {
+  static Future<Certificate?> readCertificate(String idUser) async {
     try {
-      var doc =
-      await FirebaseFirestore.instance.collection('certificate').doc(id).get();
-      if (doc.exists) {
+      var docs =  await FirebaseFirestore.instance.collection('certificate').where('idUser', isEqualTo: idUser).get();
+      if (docs.docs.isNotEmpty) {
+        var doc = docs.docs.first;
         return Certificate(
           certificateId: doc.id,
           imgCheck: doc['imgCheck'],
           idLanguage: doc['idLanguage'],
           idUser: doc['idUser'],
           status: doc['status'],
+          level: doc['level'],
         );
       } else {
         return null;
@@ -69,6 +70,7 @@ class CertificateService {
           idLanguage: doc['idLanguage'],
           idUser: doc['idUser'],
           status: doc['status'],
+          level: doc['level'],
         ));
       }
       return certificates;
@@ -91,6 +93,7 @@ class CertificateService {
           idLanguage: doc['idLanguage'],
           idUser: doc['idUser'],
           status: doc['status'],
+          level: doc['level'],
         );
       } else {
         return null;
