@@ -9,9 +9,9 @@ class Users {
   final bool status;
   final String roleId;
   final String birthday;
-  final String language;
+  final String languageId;
   final String imagePath;
-  final String field;
+  final String fieldId;
 
   Users({
     this.userId,
@@ -24,9 +24,9 @@ class Users {
     required this.status,
     required this.roleId,
     required this.birthday,
-    required this.language,
+    required this.languageId,
     required this.imagePath,
-    required this.field,
+    required this.fieldId,
   });
 
   Map<String, dynamic> toMap() {
@@ -40,9 +40,14 @@ class Users {
       'status': status,
       'roleId': roleId,
       'birthday': birthday,
-      'language': language,
+      'language': languageId,
       'imagePath': imagePath,
-      'field': field,
+      'field': fieldId,
     };
+  }
+
+  @override
+  String toString() {
+    return 'Users{userId: $userId, accountId: $accountId, fullName: $fullName, email: $email, address: $address, phone: $phone, biography: $biography, status: $status, roleId: $roleId, birthday: $birthday, languageId: $languageId, imagePath: $imagePath, fieldId: $fieldId}';
   }
 }

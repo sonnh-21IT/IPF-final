@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:config/base/base_screen.dart';
 import 'package:config/models/user.dart';
 import 'package:config/screens/app_screen.dart';
+import 'package:config/services/certificate_service.dart';
 import 'package:config/services/data_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/certificate.dart';
 import '../utils/components/component.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
@@ -36,8 +38,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   Widget build(BuildContext context) {
     return BaseScreen(
         body: SingleChildScrollView(
-      child: ContentAppUpdate(userInfo: userInfo),
-    ));
+          child: ContentAppUpdate(userInfo: userInfo),
+        ));
   }
 }
 
@@ -53,10 +55,11 @@ class ContentAppUpdate extends StatefulWidget {
 class _StateContent extends State<ContentAppUpdate> {
   // Final Variable
   late Users userInfo;
+  late String _idUser;
 
   // Avatar
-  File? _image_avata;
-  String? _path_avata;
+  File? _image_avatar;
+  String? _path_avatar;
   final String _keyPath_avata = "img_avata";
 
   // Certificate
@@ -70,7 +73,7 @@ class _StateContent extends State<ContentAppUpdate> {
   final TextEditingController _location = TextEditingController();
   final TextEditingController _description = TextEditingController(
       text:
-          "Tôi có nhiều kinh nghiệm trong lĩnh vực dịch thuật có thể hỗ trợ tốt cho bạn trong các lĩnh vực mà bạn mong muốn.");
+      "Tôi có nhiều kinh nghiệm trong lĩnh vực dịch thuật có thể hỗ trợ tốt cho bạn trong các lĩnh vực mà bạn mong muốn.");
 
   String mode = '+84';
   String phonenumber = '0931368443';
@@ -97,7 +100,23 @@ class _StateContent extends State<ContentAppUpdate> {
       'TOPIK II - level 6',
       'EPS-TOPIK'
     ],
+    'Tiếng Ý': ['CELI 1', 'CELI 2', 'CELI 3', 'CELI 4', 'CELI 5'],
+    'Tiếng Bồ Đào Nha': ['CAPLE 1', 'CAPLE 2', 'CAPLE 3', 'CAPLE 4', 'CAPLE 5'],
+    'Tiếng Nga': ['TORFL 1', 'TORFL 2', 'TORFL 3', 'TORFL 4', 'TORFL 5'],
+    'Tiếng Thái': ['DEP 1', 'DEP 2', 'DEP 3', 'DEP 4', 'DEP 5'],
   };
+
+  Map<String, String> idLanguage = {
+    'Tiếng Anh': 'iDRUHqE9moXNigg6ukJX',
+    'Tiếng Pháp': 'mtEeK49x1ok5ZlXEq3A5',
+    'Tiếng Nhật': 'zY4HaJX4MCHhNSoH8dSx',
+    'Tiếng Hàn': 'ndXC1WAmvQBXjsSLaQJb',
+    'Tiếng Ý': 'Z9PEd5g4FadOfvIE7JCy',
+    'Tiếng Bồ Đào Nha': 'MJCU4RFTj6DVDCHye89E',
+    'Tiếng Nga': 'Bv3UU2NmhSVY8AOUeCZd',
+    'Tiếng Thái': 'N3hZEeDPYSSaJMXsZqBE',
+  };
+
   Color borderColor = Colors.black;
   List<String> selectedField = ["Du lịch", "Pháp luật"];
 
@@ -110,25 +129,34 @@ class _StateContent extends State<ContentAppUpdate> {
   Map<String, String> district = {};
 
   // DateTime _dateTime = DateTime.now();
-  DateTime _dateTime = DateTime(2003, 8, 30, 0, 0, 0, 0, 0);
+  DateTime _dateTime = DateTime(
+      2003,
+      8,
+      30,
+      0,
+      0,
+      0,
+      0,
+      0);
 
   String _message = "";
   String _message_final = "";
 
   AccountService profileService = AccountService('user');
+  late Certificate certificate;
 
   // Final Function
   // ** Upload 1 **
   Future<void> _pickImage(String type) async {
     try {
       var pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
+      await ImagePicker().pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         setState(() {
           if (type == "avata") {
-            _image_avata = File(pickedFile.path);
-            saveImage(_keyPath_avata, _image_avata!.path);
-            _path_avata = _image_avata!.path;
+            _image_avatar = File(pickedFile.path);
+            saveImage(_keyPath_avata, _image_avatar!.path);
+            _path_avatar = _image_avatar!.path;
           } else if (type == "certificate") {
             _image_certificate = File(pickedFile.path);
             // saveImage(_keyPath_certificate, _image_certificate!.path );
@@ -144,7 +172,7 @@ class _StateContent extends State<ContentAppUpdate> {
   Future<void> _pickImageCamera() async {
     try {
       var pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.camera);
+      await ImagePicker().pickImage(source: ImageSource.camera);
       if (pickedFile != null) {
         setState(() {
           _image_certificate = File(pickedFile.path);
@@ -165,7 +193,7 @@ class _StateContent extends State<ContentAppUpdate> {
   void loadImage() async {
     SharedPreferences loadImg = await SharedPreferences.getInstance();
     setState(() {
-      _path_avata = loadImg.getString("img_avata");
+      _path_avatar = loadImg.getString("img_avata");
     });
   }
 
@@ -182,7 +210,7 @@ class _StateContent extends State<ContentAppUpdate> {
 
   Future<void> fetchProvinces() async {
     final response =
-        await http.get(Uri.parse('https://esgoo.net/api-tinhthanh/1/0.htm'));
+    await http.get(Uri.parse('https://esgoo.net/api-tinhthanh/1/0.htm'));
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body)['data'];
       setState(() {
@@ -224,11 +252,18 @@ class _StateContent extends State<ContentAppUpdate> {
     });
   }
 
+    Future<void> _getStatus () async {
+    certificate = (await CertificateService.readCertificate(_idUser))!;
+    _statusField= certificate?.status ?? 0 ;
+  }
+
   @override
   void initState() {
     super.initState();
     fetchProvinces();
     userInfo = widget.userInfo;
+    _idUser = userInfo.userId!;
+     _getStatus();
     loadImage();
   }
 
@@ -264,9 +299,10 @@ class _StateContent extends State<ContentAppUpdate> {
       Navigator.of(context).pop(); // Close the dialog
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-            builder: (context) => const AppScreen(
-                  currentIndex: 0,
-                )), // Navigate to home screen
+            builder: (context) =>
+            const AppScreen(
+              currentIndex: 0,
+            )), // Navigate to home screen
       );
     });
   }
@@ -295,11 +331,11 @@ class _StateContent extends State<ContentAppUpdate> {
                   ),
                   child: CircleAvatar(
                       radius: 80,
-                      backgroundImage: _path_avata != null &&
-                              _path_avata!.isNotEmpty
-                          ? FileImage(File(_path_avata!))
+                      backgroundImage: _path_avatar != null &&
+                          _path_avatar!.isNotEmpty
+                          ? FileImage(File(_path_avatar!))
                           : const AssetImage('assets/images/avata_default.png')
-                              as ImageProvider,
+                      as ImageProvider,
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: [
@@ -340,7 +376,7 @@ class _StateContent extends State<ContentAppUpdate> {
                 child: CustomMultiSelectDropdown(
                   items: selectedField,
                   onSelectionChanged:
-                      _getValueMultiSelectDropdown, // Cập nhật lĩnh vực...
+                  _getValueMultiSelectDropdown, // Cập nhật lĩnh vực...
                 ), // Cập nhật lĩnh vực...
               ),
               const SizedBox(width: 20),
@@ -383,22 +419,24 @@ class _StateContent extends State<ContentAppUpdate> {
                                               decoration: const BoxDecoration(
                                                   color: Color(0XFF979797),
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                  BorderRadius.only(
                                                     topLeft:
-                                                        Radius.circular(10.0),
+                                                    Radius.circular(10.0),
                                                     topRight:
-                                                        Radius.circular(10.0),
+                                                    Radius.circular(10.0),
                                                   )),
                                               child: Row(
                                                 children: [
                                                   const Expanded(
                                                       child: CustomText(
-                                                    data:
+                                                        data:
                                                         'Cập nhật chứng chỉ của bạn',
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
-                                                    textAlign: TextAlign.center,
-                                                  )),
+                                                        fontWeight: FontWeight
+                                                            .bold,
+                                                        fontSize: 16,
+                                                        textAlign: TextAlign
+                                                            .center,
+                                                      )),
                                                   IconButton(
                                                     icon: const Icon(
                                                         FontAwesomeIcons.xmark),
@@ -422,16 +460,16 @@ class _StateContent extends State<ContentAppUpdate> {
                                                     child: Container(
                                                       child: Column(
                                                         crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                        CrossAxisAlignment
+                                                            .start,
                                                         children: [
                                                           const CustomText(
                                                             data: "Ngôn ngữ",
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                            FontWeight.bold,
                                                             fontSize: 16,
                                                             textAlign:
-                                                                TextAlign.left,
+                                                            TextAlign.left,
                                                           ),
                                                           const SizedBox(
                                                               height: 5),
@@ -439,66 +477,68 @@ class _StateContent extends State<ContentAppUpdate> {
                                                             onFocusChange:
                                                                 (hasFocus) {
                                                               setState(() {
-                                                                borderColor = hasFocus
+                                                                borderColor =
+                                                                hasFocus
                                                                     ? const Color(
-                                                                        0xFF4CAF4F)
+                                                                    0xFF4CAF4F)
                                                                     : Colors
-                                                                        .black;
+                                                                    .black;
                                                               });
                                                             },
                                                             child: Container(
                                                               padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left: 10,
-                                                                      right:
-                                                                          10),
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 10,
+                                                                  right:
+                                                                  10),
                                                               width: double
                                                                   .infinity,
                                                               decoration:
-                                                                  BoxDecoration(
+                                                              BoxDecoration(
                                                                 color: Colors
                                                                     .white,
-                                                                border: Border.all(
+                                                                border: Border
+                                                                    .all(
                                                                     color:
-                                                                        borderColor,
+                                                                    borderColor,
                                                                     width: 1),
                                                                 borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10),
+                                                                BorderRadius
+                                                                    .circular(
+                                                                    10),
                                                               ),
                                                               child:
-                                                                  DropdownButton<
-                                                                      String>(
+                                                              DropdownButton<
+                                                                  String>(
                                                                 hint: const CustomText(
                                                                     data:
-                                                                        "-- Ngôn ngữ --",
+                                                                    "-- Ngôn ngữ --",
                                                                     fontSize:
-                                                                        16,
+                                                                    16,
                                                                     color: Colors
                                                                         .black),
                                                                 value:
-                                                                    _language,
+                                                                _language,
                                                                 items: languageCertificates
                                                                     .keys
                                                                     .map((String
-                                                                        language) {
+                                                                language) {
                                                                   return DropdownMenuItem<
                                                                       String>(
                                                                     value:
-                                                                        language,
+                                                                    language,
                                                                     child: CustomText(
                                                                         data:
-                                                                            language,
+                                                                        language,
                                                                         fontSize:
-                                                                            16,
+                                                                        16,
                                                                         color: Colors
                                                                             .black),
                                                                   );
                                                                 }).toList(),
                                                                 icon:
-                                                                    const FaIcon(
+                                                                const FaIcon(
                                                                   FontAwesomeIcons
                                                                       .chevronDown,
                                                                   color: Colors
@@ -510,16 +550,17 @@ class _StateContent extends State<ContentAppUpdate> {
                                                                     color: Colors
                                                                         .black),
                                                                 underline:
-                                                                    Container(),
+                                                                Container(),
                                                                 isExpanded:
-                                                                    true,
-                                                                onChanged: (String?
+                                                                true,
+                                                                onChanged: (
+                                                                    String?
                                                                     newValue) {
                                                                   setState(() {
                                                                     _language =
-                                                                        newValue!;
+                                                                    newValue!;
                                                                     _certificate =
-                                                                        null; // Reset chứng chỉ khi thay đổi ngôn ngữ
+                                                                    null; // Reset chứng chỉ khi thay đổi ngôn ngữ
                                                                   });
                                                                 },
                                                               ),
@@ -536,16 +577,16 @@ class _StateContent extends State<ContentAppUpdate> {
                                                     child: Container(
                                                       child: Column(
                                                         crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                        CrossAxisAlignment
+                                                            .start,
                                                         children: [
                                                           const CustomText(
                                                             data: "Chứng chỉ",
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                            FontWeight.bold,
                                                             fontSize: 16,
                                                             textAlign:
-                                                                TextAlign.left,
+                                                            TextAlign.left,
                                                           ),
                                                           const SizedBox(
                                                               height: 5),
@@ -553,66 +594,69 @@ class _StateContent extends State<ContentAppUpdate> {
                                                             onFocusChange:
                                                                 (hasFocus) {
                                                               setState(() {
-                                                                borderColor = hasFocus
+                                                                borderColor =
+                                                                hasFocus
                                                                     ? const Color(
-                                                                        0xFF4CAF4F)
+                                                                    0xFF4CAF4F)
                                                                     : Colors
-                                                                        .black;
+                                                                    .black;
                                                               });
                                                             },
                                                             child: Container(
                                                               padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left: 10,
-                                                                      right:
-                                                                          10),
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 10,
+                                                                  right:
+                                                                  10),
                                                               width: double
                                                                   .infinity,
                                                               decoration:
-                                                                  BoxDecoration(
+                                                              BoxDecoration(
                                                                 color: Colors
                                                                     .white,
-                                                                border: Border.all(
+                                                                border: Border
+                                                                    .all(
                                                                     color:
-                                                                        borderColor,
+                                                                    borderColor,
                                                                     width: 1),
                                                                 borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10), // Bo góc viền
+                                                                BorderRadius
+                                                                    .circular(
+                                                                    10), // Bo góc viền
                                                               ),
                                                               child:
-                                                                  DropdownButton<
-                                                                      String>(
+                                                              DropdownButton<
+                                                                  String>(
                                                                 hint: const CustomText(
                                                                     data:
-                                                                        "-- Chứng chỉ --",
+                                                                    "-- Chứng chỉ --",
                                                                     fontSize:
-                                                                        16,
+                                                                    16,
                                                                     color: Colors
                                                                         .black),
                                                                 value:
-                                                                    _certificate,
+                                                                _certificate,
                                                                 items: _language !=
-                                                                        null
+                                                                    null
                                                                     ? languageCertificates[
-                                                                            _language]!
-                                                                        .map((String
-                                                                            certificate) {
-                                                                        return DropdownMenuItem<
-                                                                            String>(
-                                                                          value:
-                                                                              certificate,
-                                                                          child: CustomText(
-                                                                              data: certificate,
-                                                                              fontSize: 16,
-                                                                              color: Colors.black),
-                                                                        );
-                                                                      }).toList()
+                                                                _language]!
+                                                                    .map((String
+                                                                certificate) {
+                                                                  return DropdownMenuItem<
+                                                                      String>(
+                                                                    value:
+                                                                    certificate,
+                                                                    child: CustomText(
+                                                                        data: certificate,
+                                                                        fontSize: 16,
+                                                                        color: Colors
+                                                                            .black),
+                                                                  );
+                                                                }).toList()
                                                                     : [],
                                                                 icon:
-                                                                    const FaIcon(
+                                                                const FaIcon(
                                                                   FontAwesomeIcons
                                                                       .chevronDown,
                                                                   color: Colors
@@ -624,10 +668,11 @@ class _StateContent extends State<ContentAppUpdate> {
                                                                     color: Colors
                                                                         .black),
                                                                 underline:
-                                                                    Container(),
+                                                                Container(),
                                                                 isExpanded:
-                                                                    true,
-                                                                onChanged: (String?
+                                                                true,
+                                                                onChanged: (
+                                                                    String?
                                                                     newValue) {
                                                                   setState(() {
                                                                     _certificate =
@@ -660,7 +705,7 @@ class _StateContent extends State<ContentAppUpdate> {
                                                 style: ElevatedButton.styleFrom(
                                                   foregroundColor: Colors.blue,
                                                   backgroundColor:
-                                                      Colors.blue[100],
+                                                  Colors.blue[100],
                                                   shadowColor: Colors.black,
                                                   // Màu của bóng đổ
                                                   elevation: 8,
@@ -682,9 +727,9 @@ class _StateContent extends State<ContentAppUpdate> {
                                                     'Upload ảnh từ thiết bị'),
                                                 style: ElevatedButton.styleFrom(
                                                   foregroundColor:
-                                                      Colors.orange,
+                                                  Colors.orange,
                                                   backgroundColor:
-                                                      Colors.orange[100],
+                                                  Colors.orange[100],
                                                   shadowColor: Colors.black,
                                                   // Màu của bóng đổ
                                                   elevation: 8,
@@ -697,21 +742,21 @@ class _StateContent extends State<ContentAppUpdate> {
                                               height: 200,
                                               decoration: BoxDecoration(
                                                 borderRadius:
-                                                    BorderRadius.circular(20),
+                                                BorderRadius.circular(20),
                                               ),
                                               child: ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(20),
+                                                BorderRadius.circular(20),
                                                 child: Image(
                                                   image: _path_certificate !=
-                                                              null &&
-                                                          _path_certificate!
-                                                              .isNotEmpty
+                                                      null &&
+                                                      _path_certificate!
+                                                          .isNotEmpty
                                                       ? FileImage(File(
-                                                          _path_certificate!))
+                                                      _path_certificate!))
                                                       : const AssetImage(
-                                                              'assets/images/default_image.png')
-                                                          as ImageProvider,
+                                                      'assets/images/default_image.png')
+                                                  as ImageProvider,
                                                   fit: BoxFit.cover,
                                                 ),
                                               ),
@@ -724,7 +769,7 @@ class _StateContent extends State<ContentAppUpdate> {
                                                 color: Colors.grey,
                                                 // Đặt màu sắc cho thanh ngang
                                                 thickness:
-                                                    1, // Đặt độ dày của thanh ngang
+                                                1, // Đặt độ dày của thanh ngang
                                               ),
                                             ),
                                             Center(
@@ -742,9 +787,12 @@ class _StateContent extends State<ContentAppUpdate> {
                                               width: 260,
                                               child: ElevatedButton(
                                                 onPressed: () {
+
+                                                  String idLang = idLanguage[_language] as String;
                                                   print("Language: $_language");
                                                   print(
                                                       "Certificate: $_certificate");
+                                                  print("idLanguage: $idLang ");
                                                   print(
                                                       "Image_Certificate: $_image_certificate \nPath_Certificate: $_path_certificate ");
 
@@ -754,17 +802,20 @@ class _StateContent extends State<ContentAppUpdate> {
                                                           null) {
                                                     setState(() {
                                                       _message =
-                                                          "Vui lòng chọn đủ dữ liệu trước khi cập nhật";
+                                                      "Vui lòng chọn đủ dữ liệu trước khi cập nhật";
                                                     });
                                                   } else {
+                                                    AccountService service = new AccountService("certificate");
+                                                    Certificate certificate = new Certificate(imgCheck: _path_certificate!, idLanguage: idLang, idUser:_idUser, status: 2, level: _certificate!);
+                                                    service.addData(certificate.toMap());
                                                     Navigator.of(context).pop();
                                                     showDialog(
                                                       context: context,
                                                       builder: (BuildContext
-                                                          context) {
+                                                      context) {
                                                         return AlertDialog(
                                                           content:
-                                                              IntrinsicHeight(
+                                                          IntrinsicHeight(
                                                             child: Container(
                                                               width: 300,
                                                               color: const Color(
@@ -775,25 +826,26 @@ class _StateContent extends State<ContentAppUpdate> {
                                                                       'assets/images/congratulations.png'),
                                                                   const SizedBox(
                                                                       width:
-                                                                          10),
+                                                                      10),
                                                                   Expanded(
                                                                     child:
-                                                                        RichText(
+                                                                    RichText(
                                                                       text:
-                                                                          const TextSpan(
+                                                                      const TextSpan(
                                                                         text:
-                                                                            "Cập nhật chứng chỉ thành công! Chúng tôi sẽ xem xét chứng chỉ và phản hồi cho bạn. ",
+                                                                        "Cập nhật chứng chỉ thành công! Chúng tôi sẽ xem xét chứng chỉ và phản hồi cho bạn. ",
                                                                         style:
-                                                                            TextStyle(
+                                                                        TextStyle(
                                                                           color:
-                                                                              Color(0xFF4CAF4F),
+                                                                          Color(
+                                                                              0xFF4CAF4F),
                                                                         ),
                                                                       ),
                                                                       softWrap:
-                                                                          true,
+                                                                      true,
                                                                       overflow:
-                                                                          TextOverflow
-                                                                              .clip,
+                                                                      TextOverflow
+                                                                          .clip,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -805,18 +857,18 @@ class _StateContent extends State<ContentAppUpdate> {
                                                                 onPressed: () {
                                                                   _updateStatusField();
                                                                   Navigator.of(
-                                                                          context)
+                                                                      context)
                                                                       .pop();
                                                                 },
                                                                 child:
-                                                                    const CustomText(
+                                                                const CustomText(
                                                                   data: "OK",
                                                                   color: Color(
                                                                       0xFF4CAF4F),
                                                                   fontSize: 16,
                                                                   fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
+                                                                  FontWeight
+                                                                      .bold,
                                                                 )),
                                                           ],
                                                         );
@@ -834,7 +886,7 @@ class _StateContent extends State<ContentAppUpdate> {
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor:
-                                                      const Color(0xFF4CAF4F),
+                                                  const Color(0xFF4CAF4F),
                                                 ),
                                                 child: const CustomText(
                                                   data: "Cập nhật chứng chỉ",
@@ -856,13 +908,13 @@ class _StateContent extends State<ContentAppUpdate> {
                           backgroundColor: _statusField == 1
                               ? Colors.green
                               : _statusField == 0
-                                  ? Colors.red
-                                  : Colors.yellow,
+                              ? Colors.red
+                              : Colors.yellow,
                           padding: const EdgeInsets.all(12),
                           // Additional padding
                           shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.circular(10), // Rounded corners
+                            BorderRadius.circular(10), // Rounded corners
                           ),
                           shadowColor: Colors.black,
                           // Màu của bóng đổ
@@ -887,14 +939,14 @@ class _StateContent extends State<ContentAppUpdate> {
                                 _statusField == 1
                                     ? "Đã cập nhật"
                                     : _statusField == 0
-                                        ? "Chưa cập nhật"
-                                        : "Đang chờ xử lí",
+                                    ? "Chưa cập nhật"
+                                    : "Đang chờ xử lí",
                                 style: TextStyle(
                                   color: _statusField == 1
                                       ? Colors.green
                                       : _statusField == 0
-                                          ? Colors.red
-                                          : Colors.yellow,
+                                      ? Colors.red
+                                      : Colors.yellow,
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -907,13 +959,13 @@ class _StateContent extends State<ContentAppUpdate> {
                                 _statusField == 1
                                     ? Icons.check_circle
                                     : _statusField == 0
-                                        ? Icons.cancel
-                                        : Icons.hourglass_empty,
+                                    ? Icons.cancel
+                                    : Icons.hourglass_empty,
                                 color: _statusField == 1
                                     ? Colors.green
                                     : _statusField == 0
-                                        ? Colors.red
-                                        : Colors.yellow,
+                                    ? Colors.red
+                                    : Colors.yellow,
                                 size: 15,
                               ),
                             ),
@@ -929,66 +981,66 @@ class _StateContent extends State<ContentAppUpdate> {
             children: [
               Flexible(
                   child: Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const CustomText(
-                      data: "Thành phố",
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      textAlign: TextAlign.left,
-                    ),
-                    const SizedBox(height: 5),
-                    Focus(
-                      onFocusChange: (hasFocus) {
-                        setState(() {
-                          borderColor =
-                              hasFocus ? const Color(0xFF4CAF4F) : Colors.black;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          // Màu nền của DropdownButton
-                          border: Border.all(color: borderColor, width: 1),
-                          // Màu và độ rộng của viền
-                          borderRadius:
-                              BorderRadius.circular(10), // Bo góc viền
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomText(
+                          data: "Thành phố",
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          textAlign: TextAlign.left,
                         ),
-                        child: DropdownButton<String>(
-                          hint: const Text("-- Tỉnh/Thành phố --"),
-                          value: selectedProvince,
-                          items: city.entries
-                              .map((MapEntry<String, String> entry) {
-                            return DropdownMenuItem<String>(
-                              value: entry.key,
-                              child: Text(entry.value),
-                            );
-                          }).toList(),
-                          icon: const FaIcon(
-                            FontAwesomeIcons.chevronDown,
-                            color: Colors.black,
-                            size: 16,
-                          ),
-                          elevation: 18,
-                          style: const TextStyle(color: Colors.black),
-                          underline: Container(),
-                          isExpanded: true,
-                          onChanged: (String? idcity) {
+                        const SizedBox(height: 5),
+                        Focus(
+                          onFocusChange: (hasFocus) {
                             setState(() {
-                              selectedProvince = idcity;
-                              selectedDistrict = null;
-                              fetchDistricts(selectedProvince!);
+                              borderColor =
+                              hasFocus ? const Color(0xFF4CAF4F) : Colors.black;
                             });
                           },
+                          child: Container(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              // Màu nền của DropdownButton
+                              border: Border.all(color: borderColor, width: 1),
+                              // Màu và độ rộng của viền
+                              borderRadius:
+                              BorderRadius.circular(10), // Bo góc viền
+                            ),
+                            child: DropdownButton<String>(
+                              hint: const Text("-- Tỉnh/Thành phố --"),
+                              value: selectedProvince,
+                              items: city.entries
+                                  .map((MapEntry<String, String> entry) {
+                                return DropdownMenuItem<String>(
+                                  value: entry.key,
+                                  child: Text(entry.value),
+                                );
+                              }).toList(),
+                              icon: const FaIcon(
+                                FontAwesomeIcons.chevronDown,
+                                color: Colors.black,
+                                size: 16,
+                              ),
+                              elevation: 18,
+                              style: const TextStyle(color: Colors.black),
+                              underline: Container(),
+                              isExpanded: true,
+                              onChanged: (String? idcity) {
+                                setState(() {
+                                  selectedProvince = idcity;
+                                  selectedDistrict = null;
+                                  fetchDistricts(selectedProvince!);
+                                });
+                              },
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  )),
               const SizedBox(width: 20),
               Flexible(
                 child: Container(
@@ -1019,7 +1071,7 @@ class _StateContent extends State<ContentAppUpdate> {
                             border: Border.all(color: borderColor, width: 1),
                             // Màu và độ rộng của viền
                             borderRadius:
-                                BorderRadius.circular(10), // Bo góc viền
+                            BorderRadius.circular(10), // Bo góc viền
                           ),
                           child: DropdownButton<String>(
                             hint: const Text("-- Huyện --"),
@@ -1105,22 +1157,7 @@ class _StateContent extends State<ContentAppUpdate> {
               onPressed: () {
                 String date =
                     "${_dateTime.day}/${_dateTime.month}/${_dateTime.year}";
-                Users user = Users(
-                  userId: FirebaseAuth.instance.currentUser!.uid,
-                  accountId: FirebaseAuth.instance.currentUser!.uid,
-                  fullName: _fullName.text,
-                  email: _email.text,
-                  address: _location.text,
-                  phone: phonenumber,
-                  biography: _description.text,
-                  status: true,
-                  roleId: "1",
-                  birthday: date,
-                  imagePath: _path_avata!,
-                  field: '',
-                  language: '',
-                );
-                profileService.updateData(user.userId!, user.toMap());
+
 
                 if (_fullName.text.trim() == "" ||
                     _email.text.trim() == "" ||
@@ -1130,6 +1167,22 @@ class _StateContent extends State<ContentAppUpdate> {
                     _message_final = "Vui lòng cập nhật đầy đủ dữ liệu!";
                   });
                 } else {
+                  Users user = Users(
+                    userId: _idUser,
+                    accountId: FirebaseAuth.instance.currentUser!.uid,
+                    fullName: _fullName.text,
+                    email: _email.text,
+                    address: _location.text,
+                    phone: phonenumber,
+                    biography: _description.text,
+                    status: true,
+                    roleId: "ANBYtDv7W1A1GrkfJ61S",
+                    birthday: date,
+                    imagePath: "image.png",
+                    fieldId: '',
+                    languageId: '',
+                  );
+                  profileService.updateData(_idUser!, user.toMap());
                   setState(() {
                     _message_final = "";
                     _showSuccessMessage(context);

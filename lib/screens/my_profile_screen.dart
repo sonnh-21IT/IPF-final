@@ -60,26 +60,27 @@ class ContentApp extends StatefulWidget {
 }
 
 class _StateContent extends State<ContentApp> {
-  // Final Variable
   late Users userInfo;
-  File? _image_avata;
-  String? _path_avata;
-  final String _keyPath_avata = "img_avata";
-
-  final String _fullname = "Từ Công Minh";
+  String? _path_avatar;
   final num _vote = 4.7;
-  final String _aboutMe =
-      "Tôi đã có nhiều kinh nghiệm phiên dịch trên lĩnh vực Pháp luật và Y tế, thành thạo các kỹ năng tin học văn phòng.";
-  final String _location = "Đà nẵng";
-  final String _language = "Tiếng Hàn";
-  String colorrr = "0xFF4CAF4F";
   bool _isLogin = false;
+
+  Map<String, String> idLanguage = {
+    'iDRUHqE9moXNigg6ukJX' :  'Tiếng Anh',
+    'mtEeK49x1ok5ZlXEq3A5' : 'Tiếng Pháp',
+    'zY4HaJX4MCHhNSoH8dSx': 'Tiếng Nhật',
+    'ndXC1WAmvQBXjsSLaQJb': 'Tiếng Hàn',
+    'Z9PEd5g4FadOfvIE7JCy': 'Tiếng Ý',
+    'MJCU4RFTj6DVDCHye89E' : 'Tiếng Bồ Đào Nha' ,
+    'Bv3UU2NmhSVY8AOUeCZd' : 'Tiếng Nga',
+    'N3hZEeDPYSSaJMXsZqBE' : 'Tiếng Thái',
+  };
 
   // Final Function
   void loadImage() async {
     SharedPreferences loadImg = await SharedPreferences.getInstance();
     setState(() {
-      _path_avata = loadImg.getString("img_avata");
+      _path_avatar = loadImg.getString("img_avata");
     });
   }
 
@@ -133,8 +134,8 @@ class _StateContent extends State<ContentApp> {
                     child: CircleAvatar(
                         radius: 80,
                         backgroundImage:
-                            _path_avata != null && _path_avata!.isNotEmpty
-                                ? FileImage(File(_path_avata!))
+                        _path_avatar != null && _path_avatar!.isNotEmpty
+                                ? FileImage(File(_path_avatar!))
                                 : const AssetImage(
                                         'assets/images/avata_default.png')
                                     as ImageProvider,
@@ -286,7 +287,7 @@ class _StateContent extends State<ContentApp> {
                           width: 14,
                         ),
                         CustomText(
-                          data: userInfo.language ?? _language,
+                          data: idLanguage[userInfo.languageId] ?? '',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

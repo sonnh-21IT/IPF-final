@@ -50,8 +50,8 @@ class ProjectService {
         biography: doc['biography'],
         status: doc['status'],
         birthday: doc['birthday'],
-        field: doc['field'],
-        language: doc.data().containsKey('language') ? doc['language'] : '',
+        fieldId: doc['field'],
+        languageId: doc.data().containsKey('language') ? doc['language'] : '',
         imagePath: doc.data().containsKey('imagePath') ? doc['imagePath'] : '');
 
     return user;
@@ -102,9 +102,9 @@ class ProjectService {
           biography: doc['biography'],
           status: doc['status'],
           birthday: doc['birthday'],
-          language: doc['language'],
+          languageId: doc['language'],
           imagePath: doc['imagePath'],
-          field: doc['field']);
+          fieldId: doc['field']);
       users.add(user);
     }
     return users;

@@ -1,15 +1,14 @@
 class Field {
-  final String fieldId;
+  final String? fieldId;
   final String field;
 
   Field({
-    required this.fieldId,
+    this.fieldId,
     required this.field,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'fieldId': fieldId,
       'field': field,
     };
   }

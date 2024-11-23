@@ -19,9 +19,9 @@ class AccountService {
           biography: doc['biography'],
           status: doc['status'],
           birthday: doc['birthday'],
-          language: doc['language'],
+          languageId: doc['languageId'],
           imagePath: doc['imagePath'],
-          field: doc['field']);
+          fieldId: doc['fieldId']);
       users.add(user);
     }
     return users;
@@ -45,8 +45,8 @@ class AccountService {
         biography: doc['biography'],
         status: doc['status'],
         birthday: doc['birthday'],
-        field: doc['field'],
-        language: doc.data().containsKey('language') ? doc['language'] : '',
+        fieldId: doc['fieldId'],
+        languageId: doc['languageId'],
         imagePath: doc.data().containsKey('imagePath') ? doc['imagePath'] : '');
 
     return user;
@@ -97,9 +97,9 @@ class AccountService {
           biography: doc['biography'],
           status: doc['status'],
           birthday: doc['birthday'],
-          language: doc['language'],
+          languageId: doc['languageId'],
           imagePath: doc['imagePath'],
-          field: doc['field']);
+          fieldId: doc['fieldId']);
       users.add(user);
     }
     return users;
@@ -111,20 +111,19 @@ class AccountService {
         await FirebaseFirestore.instance.collection('user').doc(userId).get();
     if (doc.exists) {
       return Users(
-        userId: doc.id,
-        roleId: doc['roleId'],
-        accountId: doc['accountId'],
-        fullName: doc['fullName'],
-        email: doc['email'],
-        address: doc['address'],
-        phone: doc['phone'],
-        biography: doc['biography'],
-        status: doc['status'],
-        birthday: doc['birthday'],
-        field: doc['field'],
-        imagePath: doc['imagePath'],
-        language: doc['language']
-      );
+          userId: doc.id,
+          roleId: doc['roleId'],
+          accountId: doc['accountId'],
+          fullName: doc['fullName'],
+          email: doc['email'],
+          address: doc['address'],
+          phone: doc['phone'],
+          biography: doc['biography'],
+          status: doc['status'],
+          birthday: doc['birthday'],
+          fieldId: doc['fieldId'],
+          imagePath: doc['imagePath'],
+          languageId: doc['languageId']);
     } else {
       throw Exception("User not found");
     }
