@@ -66,7 +66,7 @@ class TranslatorProfileDialog extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                       side: const BorderSide(color: Colors.green),
                       foregroundColor: Colors.green),
-                  child: Text(users.field!),
+                  child: Text(users.field),
                 ),
               ],
             ),
