@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:config/base/base_screen.dart';
 import 'package:config/models/user.dart';
 import 'package:config/screens/app_screen.dart';
+import 'package:config/services/certificate_service.dart';
 import 'package:config/services/data_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +55,7 @@ class ContentAppUpdate extends StatefulWidget {
 class _StateContent extends State<ContentAppUpdate> {
   // Final Variable
   late Users userInfo;
+  late String _idUser;
 
   // Avatar
   File? _image_avatar;
@@ -98,7 +100,23 @@ class _StateContent extends State<ContentAppUpdate> {
       'TOPIK II - level 6',
       'EPS-TOPIK'
     ],
+    'Tiếng Ý': ['CELI 1', 'CELI 2', 'CELI 3', 'CELI 4', 'CELI 5'],
+    'Tiếng Bồ Đào Nha': ['CAPLE 1', 'CAPLE 2', 'CAPLE 3', 'CAPLE 4', 'CAPLE 5'],
+    'Tiếng Nga': ['TORFL 1', 'TORFL 2', 'TORFL 3', 'TORFL 4', 'TORFL 5'],
+    'Tiếng Thái': ['DEP 1', 'DEP 2', 'DEP 3', 'DEP 4', 'DEP 5'],
   };
+
+  Map<String, String> idLanguage = {
+    'Tiếng Anh': 'iDRUHqE9moXNigg6ukJX',
+    'Tiếng Pháp': 'mtEeK49x1ok5ZlXEq3A5',
+    'Tiếng Nhật': 'zY4HaJX4MCHhNSoH8dSx',
+    'Tiếng Hàn': 'ndXC1WAmvQBXjsSLaQJb',
+    'Tiếng Ý': 'Z9PEd5g4FadOfvIE7JCy',
+    'Tiếng Bồ Đào Nha': 'MJCU4RFTj6DVDCHye89E',
+    'Tiếng Nga': 'Bv3UU2NmhSVY8AOUeCZd',
+    'Tiếng Thái': 'N3hZEeDPYSSaJMXsZqBE',
+  };
+
   Color borderColor = Colors.black;
   List<String> selectedField = ["Du lịch", "Pháp luật"];
 
@@ -125,6 +143,7 @@ class _StateContent extends State<ContentAppUpdate> {
   String _message_final = "";
 
   AccountService profileService = AccountService('user');
+  late Certificate certificate;
 
   // Final Function
   // ** Upload 1 **
@@ -233,11 +252,18 @@ class _StateContent extends State<ContentAppUpdate> {
     });
   }
 
+    Future<void> _getStatus () async {
+    certificate = (await CertificateService.readCertificate(_idUser))!;
+    _statusField= certificate?.status ?? 0 ;
+  }
+
   @override
   void initState() {
     super.initState();
     fetchProvinces();
     userInfo = widget.userInfo;
+    _idUser = userInfo.userId!;
+     _getStatus();
     loadImage();
   }
 
@@ -761,9 +787,12 @@ class _StateContent extends State<ContentAppUpdate> {
                                               width: 260,
                                               child: ElevatedButton(
                                                 onPressed: () {
+
+                                                  String idLang = idLanguage[_language] as String;
                                                   print("Language: $_language");
                                                   print(
                                                       "Certificate: $_certificate");
+                                                  print("idLanguage: $idLang ");
                                                   print(
                                                       "Image_Certificate: $_image_certificate \nPath_Certificate: $_path_certificate ");
 
@@ -776,6 +805,9 @@ class _StateContent extends State<ContentAppUpdate> {
                                                       "Vui lòng chọn đủ dữ liệu trước khi cập nhật";
                                                     });
                                                   } else {
+                                                    AccountService service = new AccountService("certificate");
+                                                    Certificate certificate = new Certificate(imgCheck: _path_certificate!, idLanguage: idLang, idUser:_idUser, status: 2, level: _certificate!);
+                                                    service.addData(certificate.toMap());
                                                     Navigator.of(context).pop();
                                                     showDialog(
                                                       context: context,
@@ -1125,22 +1157,7 @@ class _StateContent extends State<ContentAppUpdate> {
               onPressed: () {
                 String date =
                     "${_dateTime.day}/${_dateTime.month}/${_dateTime.year}";
-                Users user = Users(
-                  userId: FirebaseAuth.instance.currentUser!.uid,
-                  accountId: FirebaseAuth.instance.currentUser!.uid,
-                  fullName: _fullName.text,
-                  email: _email.text,
-                  address: _location.text,
-                  phone: phonenumber,
-                  biography: _description.text,
-                  status: true,
-                  roleId: "1",
-                  birthday: date,
-                  imagePath: _path_avatar!,
-                  fieldId: '',
-                  languageId: '',
-                );
-                profileService.updateData(user.userId!, user.toMap());
+
 
                 if (_fullName.text.trim() == "" ||
                     _email.text.trim() == "" ||
@@ -1150,6 +1167,22 @@ class _StateContent extends State<ContentAppUpdate> {
                     _message_final = "Vui lòng cập nhật đầy đủ dữ liệu!";
                   });
                 } else {
+                  Users user = Users(
+                    userId: _idUser,
+                    accountId: FirebaseAuth.instance.currentUser!.uid,
+                    fullName: _fullName.text,
+                    email: _email.text,
+                    address: _location.text,
+                    phone: phonenumber,
+                    biography: _description.text,
+                    status: true,
+                    roleId: "ANBYtDv7W1A1GrkfJ61S",
+                    birthday: date,
+                    imagePath: "image.png",
+                    fieldId: '',
+                    languageId: '',
+                  );
+                  profileService.updateData(_idUser!, user.toMap());
                   setState(() {
                     _message_final = "";
                     _showSuccessMessage(context);
