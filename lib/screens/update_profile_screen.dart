@@ -142,7 +142,7 @@ class _StateContent extends State<ContentAppUpdate> {
   String _message = "";
   String _message_final = "";
 
-  AccountService profileService = AccountService('user');
+  DataService profileService = DataService('user');
   late Certificate certificate;
 
   // Final Function
@@ -805,7 +805,7 @@ class _StateContent extends State<ContentAppUpdate> {
                                                       "Vui lòng chọn đủ dữ liệu trước khi cập nhật";
                                                     });
                                                   } else {
-                                                    AccountService service = new AccountService("certificate");
+                                                    DataService service = new DataService("certificate");
                                                     Certificate certificate = new Certificate(imgCheck: _path_certificate!, idLanguage: idLang, idUser:_idUser, status: 2, level: _certificate!);
                                                     service.addData(certificate.toMap());
                                                     Navigator.of(context).pop();
@@ -1181,6 +1181,7 @@ class _StateContent extends State<ContentAppUpdate> {
                     imagePath: "image.png",
                     fieldId: '',
                     languageId: '',
+                    credit: userInfo.credit,
                   );
                   profileService.updateData(_idUser!, user.toMap());
                   setState(() {

@@ -21,7 +21,9 @@ class AccountService {
           birthday: doc['birthday'],
           languageId: doc['languageId'],
           imagePath: doc['imagePath'],
-          fieldId: doc['fieldId']);
+          fieldId: doc['fieldId'],
+          credit: doc['credit']);
+
       users.add(user);
     }
     return users;
@@ -47,7 +49,9 @@ class AccountService {
         birthday: doc['birthday'],
         fieldId: doc['fieldId'],
         languageId: doc['languageId'],
-        imagePath: doc.data().containsKey('imagePath') ? doc['imagePath'] : '');
+        imagePath: doc.data().containsKey('imagePath') ? doc['imagePath'] : '',
+        credit: doc['credit']
+    );
 
     return user;
   }
@@ -99,7 +103,8 @@ class AccountService {
           birthday: doc['birthday'],
           languageId: doc['languageId'],
           imagePath: doc['imagePath'],
-          fieldId: doc['fieldId']);
+          fieldId: doc['fieldId'],
+          credit: doc['credit']);
       users.add(user);
     }
     return users;
@@ -123,7 +128,8 @@ class AccountService {
           birthday: doc['birthday'],
           fieldId: doc['fieldId'],
           imagePath: doc['imagePath'],
-          languageId: doc['languageId']);
+          languageId: doc['languageId'],
+          credit: doc['credit']);
     } else {
       throw Exception("User not found");
     }

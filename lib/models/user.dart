@@ -12,6 +12,7 @@ class Users {
   final String languageId;
   final String imagePath;
   final String fieldId;
+  late final int credit;
 
   Users({
     this.userId,
@@ -27,7 +28,10 @@ class Users {
     required this.languageId,
     required this.imagePath,
     required this.fieldId,
+    required this.credit,
   });
+
+
 
   Map<String, dynamic> toMap() {
     return {
@@ -40,14 +44,15 @@ class Users {
       'status': status,
       'roleId': roleId,
       'birthday': birthday,
-      'language': languageId,
+      'languageId': languageId,
       'imagePath': imagePath,
-      'field': fieldId,
+      'fieldId': fieldId,
+      'credit': credit,
     };
   }
 
   @override
   String toString() {
-    return 'Users{userId: $userId, accountId: $accountId, fullName: $fullName, email: $email, address: $address, phone: $phone, biography: $biography, status: $status, roleId: $roleId, birthday: $birthday, languageId: $languageId, imagePath: $imagePath, fieldId: $fieldId}';
+    return 'Users{userId: $userId, accountId: $accountId, fullName: $fullName, email: $email, address: $address, phone: $phone, biography: $biography, status: $status, roleId: $roleId, birthday: $birthday, languageId: $languageId, imagePath: $imagePath, fieldId: $fieldId, credit: $credit}';
   }
 }

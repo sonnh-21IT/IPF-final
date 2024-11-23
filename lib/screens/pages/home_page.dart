@@ -25,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   String? _path_avata;
   final String _keyPath_avata = "img_avata";
   bool _isLogin = false;
+  late int credit = 0;
 
   final String _fullname = "Trần Quang";
   String selectedCategory = 'Pháp lý';
@@ -51,6 +52,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _isLogin = isLogin;
         userInfo = user;
+        credit = userInfo?.credit ?? 0;
       });
     } else {
       setState(() {
@@ -229,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 20),
 // Số dư và Điểm thưởng
-                Center(
+                _isLogin ? Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -244,7 +246,7 @@ class _HomePageState extends State<HomePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Padding(
+                             Padding(
                               padding: EdgeInsets.only(left: 8.0),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -252,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   Text('Số dư',
                                       style: TextStyle(color: Colors.black)),
-                                  Text('0 Credit',
+                                  Text('$credit Credit',
                                       style: TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold)),
@@ -316,7 +318,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                ),
+                ) : Container(),
 // Title Dự án đề xuất
                 const SizedBox(height: 20),
                 Container(
